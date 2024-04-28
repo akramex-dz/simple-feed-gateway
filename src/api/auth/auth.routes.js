@@ -13,6 +13,8 @@ const {
   findUserByEmail,
   findUserById,
   createUserByEmailAndPassword,
+  findUserByUsername,
+  findUserByEmailOrUsername,
 } = require('../users/users.services');
 const { hashToken } = require('../../utils/hashToken');
 
@@ -20,20 +22,27 @@ const router = express.Router();
 
 router.post('/register', async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
+    const { email, username, password } = req.body;
+    if (!email || !username || !password) {
       res.status(400);
-      throw new Error('You must provide an email and a password.');
+      throw new Error('You must provide an email, a password and a user name.');
     }
 
-    const existingUser = await findUserByEmail(email);
+    let existingUser = await findUserByEmail(email);
 
     if (existingUser) {
       res.status(400);
       throw new Error('Email already in use.');
     }
 
-    const user = await createUserByEmailAndPassword({ email, password });
+    existingUser = await findUserByUsername(username);
+
+    if (existingUser) {
+      res.status(400);
+      throw new Error('Username already in use.');
+    }
+
+    const user = await createUserByEmailAndPassword({ email, username, password });
     const jti = uuidv4();
     const { accessToken, refreshToken } = generateTokens(user, jti);
     await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
@@ -49,13 +58,14 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
+    const { username, password } = req.body;
+    // username is either email or username
+    if (!username || !password) {
       res.status(400);
-      throw new Error('You must provide an email and a password.');
+      throw new Error('You must provide an email, a username and a password.');
     }
 
-    const existingUser = await findUserByEmail(email);
+    const existingUser = await findUserByEmailOrUsername(username, username);
 
     if (!existingUser) {
       res.status(403);
