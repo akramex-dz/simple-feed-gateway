@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("TEST_DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -18,11 +18,17 @@ model User {
   email           String         @unique
   username        String         @unique
   password        String
-  followers       User[]         @relation("UserFollows")
-  following       User[]         @relation("UserFollows")
+  followers       User[]         @relation("Follows")
+  following       User[]         @relation("Follows")
   refreshTokens   RefreshToken[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model Follows {
+  followerId  Int
+  followingId Int
+  @@id([followerId, followingId])
 }
 
 model RefreshToken {
