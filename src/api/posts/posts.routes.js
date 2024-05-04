@@ -1,5 +1,5 @@
 const express = require('express');
-const { isAuthenticated, setLoggedInUserIdFromToken } = require('../../middlewares');
+const { isAuthenticated } = require('../../middlewares');
 const {
   getAllPosts,
   getPostById,
@@ -27,7 +27,7 @@ router.get('/', isAuthenticated, async (req, res, next) => {
 });
 
 // Get post by ID
-router.get('/:postId', isAuthenticated, async (req, res, next) => {
+router.get('/post/:postId', isAuthenticated, async (req, res, next) => {
   try {
     const post = await getPostById(req.params.postId);
     res.json(post);
@@ -57,9 +57,11 @@ router.post('/users', isAuthenticated, async (req, res, next) => {
 });
 
 // Get post of followings of logged in user
-router.get('/followings', isAuthenticated, setLoggedInUserIdFromToken, async (req, res, next) => {
+router.get('/followings', isAuthenticated, async (req, res, next) => {
   try {
-    const followingsIds = await listFollowingsIds(req.loggedInUserId);
+    const { userId: loggedInUserId } = req.payload;
+    const followingsIds = await listFollowingsIds(loggedInUserId);
+    console.log(followingsIds);
     const posts = await getPostsByUserIds(followingsIds);
     res.json(posts);
   } catch (err) {
@@ -68,10 +70,12 @@ router.get('/followings', isAuthenticated, setLoggedInUserIdFromToken, async (re
 });
 
 // Create a new post
-router.post('/', isAuthenticated, setLoggedInUserIdFromToken, async (req, res, next) => {
+router.post('/', isAuthenticated, async (req, res, next) => {
   try {
+    const { userId: loggedInUserId } = req.payload;
+
     const newPost = {
-      userId: req.loggedInUserId,
+      userId: loggedInUserId,
       content: req.body.content,
     };
 
@@ -83,10 +87,12 @@ router.post('/', isAuthenticated, setLoggedInUserIdFromToken, async (req, res, n
 });
 
 // Update post by ID
-router.put('/:postId', isAuthenticated, setLoggedInUserIdFromToken, async (req, res, next) => {
+router.put('/:postId', isAuthenticated, async (req, res, next) => {
   try {
+    const { userId: loggedInUserId } = req.payload;
+
     const oldPost = await getPostById(req.params.postId);
-    if (oldPost.userId !== req.loggedInUserId) {
+    if (oldPost.userId !== loggedInUserId) {
       res.status(403);
       throw new Error('Forbidden');
     }
@@ -102,10 +108,12 @@ router.put('/:postId', isAuthenticated, setLoggedInUserIdFromToken, async (req, 
 });
 
 // Delete post by ID
-router.delete('/:postId', isAuthenticated, setLoggedInUserIdFromToken, async (req, res, next) => {
+router.delete('/:postId', isAuthenticated, async (req, res, next) => {
   try {
+    const { userId: loggedInUserId } = req.payload;
+
     const postToDelete = await getPostById(req.params.postId);
-    if (postToDelete.userId !== req.loggedInUserId) {
+    if (postToDelete.userId !== loggedInUserId) {
       res.status(403);
       throw new Error('Forbidden');
     }
@@ -120,7 +128,9 @@ router.delete('/:postId', isAuthenticated, setLoggedInUserIdFromToken, async (re
 // Like a post
 router.post('/:postId/like', isAuthenticated, async (req, res, next) => {
   try {
-    const post = await likePost(req.params.postId, req.body.userId);
+    const { userId: loggedInUserId } = req.payload;
+
+    const post = await likePost(req.params.postId, loggedInUserId);
     res.json(post);
   } catch (err) {
     next(err);
@@ -128,9 +138,11 @@ router.post('/:postId/like', isAuthenticated, async (req, res, next) => {
 });
 
 // Unlike a post
-router.delete('/:postId/unlike/:userId', isAuthenticated, async (req, res, next) => {
+router.delete('/:postId/unlike', isAuthenticated, async (req, res, next) => {
   try {
-    const post = await unlikePost(req.params.postId, req.params.userId);
+    const { userId: loggedInUserId } = req.payload;
+
+    const post = await unlikePost(req.params.postId, loggedInUserId);
     res.json(post);
   } catch (err) {
     next(err);

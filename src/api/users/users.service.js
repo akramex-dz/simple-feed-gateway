@@ -185,7 +185,7 @@ async function listFollowings(userId) {
 }
 
 async function listFollowingsIds(userId) {
-  return db.user.findUnique({
+  const user = await db.user.findUnique({
     where: {
       id: userId,
     },
@@ -197,7 +197,11 @@ async function listFollowingsIds(userId) {
       },
     },
   });
-}
+
+  const followingIds = user.following.map((following) => following.id);
+
+  return followingIds;
+};
 
 module.exports = {
   findUserByEmail,
