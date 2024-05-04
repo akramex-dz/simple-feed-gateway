@@ -5,7 +5,6 @@ const {
   searchUsersByEmailOrUsername,
   followUser,
   unfollowUser,
-  findUserByUsername,
   listFollowers,
   listFollowings,
 } = require('./users.services');
@@ -36,16 +35,17 @@ router.get('/search', isAuthenticated, async (req, res, next) => {
 });
 
 // Follow a user
-router.put('/:username/follow', isAuthenticated, async (req, res, next) => {
+router.put('/:userId/follow', isAuthenticated, async (req, res, next) => {
   try {
-    const { username } = req.params;
+    const { userId } = req.params;
     const { userId: followerId } = req.payload;
-    const user = await findUserByUsername(username);
 
-    if (user.id === followerId) {
+    if (userId === followerId) {
       res.status(400);
       throw new Error('You cannot follow yourself.');
     }
+
+    const user = await findUserById(userId);
 
     if (!user) {
       res.status(404);
@@ -60,23 +60,24 @@ router.put('/:username/follow', isAuthenticated, async (req, res, next) => {
 });
 
 // Unfollow a user
-router.put('/:username/unfollow', isAuthenticated, async (req, res, next) => {
+router.put('/:userId/unfollow', isAuthenticated, async (req, res, next) => {
   try {
-    const { username } = req.params;
+    const { userId } = req.params;
     const { userId: followerId } = req.payload;
-    const user = await findUserByUsername(username);
 
-    if (user.id === followerId) {
+    if (userId === followerId) {
       res.status(400);
       throw new Error('You cannot unfollow yourself.');
     }
+
+    const user = await findUserById(userId);
 
     if (!user) {
       res.status(404);
       throw new Error('User not found.');
     }
 
-    const { unfollowed } = await unfollowUser(followerId, user.id);
+    const { unfollowed } = await unfollowUser(followerId, userId);
     res.json(unfollowed);
   } catch (err) {
     next(err);
@@ -84,10 +85,16 @@ router.put('/:username/unfollow', isAuthenticated, async (req, res, next) => {
 });
 
 // list followers
-router.get('/:username/followers', isAuthenticated, async (req, res, next) => {
+router.get('/followers', isAuthenticated, async (req, res, next) => {
   try {
-    const { username } = req.params;
-    const user = await findUserByUsername(username);
+    const { userId } = req.payload;
+    const user = await findUserById(userId);
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found.');
+    }
+
     const followers = await listFollowers(user.id);
     res.json(followers);
   } catch (err) {
@@ -96,10 +103,16 @@ router.get('/:username/followers', isAuthenticated, async (req, res, next) => {
 });
 
 // list followings
-router.get('/:username/followings', isAuthenticated, async (req, res, next) => {
+router.get('/followings', isAuthenticated, async (req, res, next) => {
   try {
-    const { username } = req.params;
-    const user = await findUserByUsername(username);
+    const { userId } = req.payload;
+    const user = await findUserById(userId);
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found.');
+    }
+
     const followings = await listFollowings(user.id);
     res.json(followings);
   } catch (err) {
