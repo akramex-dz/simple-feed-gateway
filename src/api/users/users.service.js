@@ -184,6 +184,21 @@ async function listFollowings(userId) {
   });
 }
 
+async function listFollowingsIds(userId) {
+  return db.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      following: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -195,4 +210,5 @@ module.exports = {
   unfollowUser,
   listFollowers,
   listFollowings,
+  listFollowingsIds,
 };
