@@ -15,7 +15,7 @@ const {
   createUserByEmailAndPassword,
   findUserByUsername,
   findUserByEmailOrUsername,
-} = require('../users/users.services');
+} = require('../users/users.service');
 const { hashToken } = require('../../utils/hashToken');
 
 const router = express.Router();
@@ -131,17 +131,5 @@ router.post('/refreshToken', async (req, res, next) => {
     next(err);
   }
 });
-
-// // This endpoint is only for demo purpose.
-// // Move this logic where you need to revoke the tokens( for ex, on password reset)
-// router.post('/revokeRefreshTokens', async (req, res, next) => {
-//   try {
-//     const { userId } = req.body;
-//     await revokeTokens(userId);
-//     res.json({ message: `Tokens revoked for user with id #${userId}` });
-//   } catch (err) {
-//     next(err);
-//   }
-// });
 
 module.exports = router;

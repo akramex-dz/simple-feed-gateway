@@ -184,6 +184,25 @@ async function listFollowings(userId) {
   });
 }
 
+async function listFollowingsIds(userId) {
+  const user = await db.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      following: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  const followingIds = user.following.map((following) => following.id);
+
+  return followingIds;
+};
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -195,4 +214,5 @@ module.exports = {
   unfollowUser,
   listFollowers,
   listFollowings,
+  listFollowingsIds,
 };
