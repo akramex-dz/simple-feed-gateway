@@ -7,7 +7,7 @@ const {
   unfollowUser,
   listFollowers,
   listFollowings,
-} = require('./users.service');
+} = require('../Services/users.service');
 
 const router = express.Router();
 

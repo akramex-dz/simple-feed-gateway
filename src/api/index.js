@@ -2,10 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
-const auth = require('./auth/auth.routes');
-const users = require('./users/users.routes');
-const posts = require('./posts/posts.routes');
-const comments = require('./comments/comments.routes');
+const auth = require('./Controllers/auth.controller');
+const users = require('./Controllers/users.controller');
+const posts = require('./Controllers/posts.controller');
+const comments = require('./Controllers/comments.controller');
 
 router.use('/auth', auth);
 router.use('/users', users);
