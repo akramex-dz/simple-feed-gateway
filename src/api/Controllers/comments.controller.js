@@ -9,7 +9,7 @@ const {
   deleteCommentById,
   likeComment,
   unlikeComment,
-} = require('./comments.service');
+} = require('../Services/comments.service');
 
 const router = express.Router();
 

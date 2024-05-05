@@ -10,9 +10,9 @@ const {
   deletePostById,
   likePost,
   unlikePost,
-} = require('./posts.service');
+} = require('../Services/posts.service');
 
-const { listFollowingsIds } = require('../users/users.service');
+const { listFollowingsIds } = require('../Services/users.service');
 
 const router = express.Router();
 
