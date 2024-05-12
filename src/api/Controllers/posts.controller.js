@@ -11,6 +11,7 @@ const {
   likePost,
   unlikePost,
 } = require('../Services/posts.service');
+const { findUserById } = require('../Services/users.service');
 
 const { listFollowingsIds } = require('../Services/users.service');
 
@@ -20,7 +21,12 @@ const router = express.Router();
 router.get('/', isAuthenticated, async (req, res, next) => {
   try {
     const posts = await getAllPosts();
-    res.json(posts);
+    const updatedPosts = await Promise.all(posts.map(async (post) => {
+      const user = await findUserById(post.userId);
+      post.username = user.username;
+      return post;
+    }));
+    res.json(updatedPosts);
   } catch (err) {
     next(err);
   }
